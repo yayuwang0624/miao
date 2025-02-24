@@ -157,6 +157,19 @@
                                (deactivate-mark)
                                (goto-char pos)))))))
 
+(defun miao-till (ch &optional n)
+  "Move point to the next occurrence of character CH.
+If N is provided, move to the Nth occurrence. Defaults to 1.
+Search is case-sensitive."
+  (interactive "cTill: \nP")
+  (let* ((case-fold-search nil)
+         (ch-str (char-to-string ch))
+         (count (or n 1))
+         (pos (save-excursion
+                (search-forward ch-str nil t count))))
+    (when pos
+      (goto-char (1- pos)))))
+
 (defun miao--add-fake-cursor-at-point (pos)
   "Create an overlay to draw a fake cursor as miacro at POS."
   (let ((ov (make-overlay pos (1+ pos) nil t)))
