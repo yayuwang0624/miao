@@ -42,12 +42,11 @@
 (defun miao-leader-quit ()
   "miao leader state quit and switch to previous state"
   (interactive)
-  (if miao-leader-mode
-      (progn
-        (miao-switch-to-previous-state)
-        (setq miao--leader-previous-state nil)
-        (setq miao--leader-keys nil)
-        (setq overriding-local-map nil))))
+  (when miao-leader-mode
+    (miao-switch-to-previous-state)
+    (setq miao--leader-previous-state nil)
+    (setq miao--leader-keys nil)
+    (setq overriding-local-map nil)))
 
 (defun miao-mark-word ()
   (interactive)
