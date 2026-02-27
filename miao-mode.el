@@ -125,8 +125,9 @@
             (setq keymap (make-sparse-keymap))
             (suppress-keymap keymap t)
             (dolist (chr miao-bypass-mode-keys)
-              (let ((miao-func (lookup-key miao-normal-state-keymap (char-to-string chr)))
-                    (major-func (lookup-key (current-local-map) (char-to-string chr))))
+              (let* ((chr-vec (vector (char-to-string chr)))
+                     (miao-func (lookup-key miao-normal-state-keymap chr-vec))
+                     (major-func (lookup-key (current-local-map) chr-vec)))
                 (if major-func
                     (define-key keymap (char-to-string chr) major-func)
                   (if miao-func
