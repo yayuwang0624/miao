@@ -69,6 +69,7 @@ Example usage:
         keymap
       (setq keymap (make-keymap))
       (suppress-keymap keymap t)
+      (set-keymap-parent keymap miao-leader-state-keymap)
       (puthash major keymap miao-leader-major-keymap-hash)
       keymap)))
 

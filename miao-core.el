@@ -53,45 +53,40 @@
   (self-insert-command N C))
 
 (defun miao--parse-input-event (event)
-  (cond
-   ((equal event 32)
-    "SPC")
-   ((characterp event)
-    (string event))
-   ((equal 'tab event)
-    "TAB")
-   ((equal 'return event)
-    "RET")
-   ((equal 'backspace event)
-    "DEL")
-   ((equal 'escape event)
-    "ESC")
-   ((symbolp event)
-    (format "<%s>" event))
-   (t nil)))
+  "Convert EVENT into a normalized key string for leader mode."
+  (let ((key-str (key-description event)))
+    (cond
+     ;; Tab
+     ((member key-str '("<tab>" "TAB" "C-i")) "TAB")
+     ;; Return / Enter
+     ((member key-str '("<return>" "RET" "C-m")) "RET")
+     ;; Backspace / DEL
+     ((member key-str '("<backspace>" "DEL" "C-h")) "DEL")
+     ;; Escape
+     ((member key-str '("<escape>" "ESC" "C-["))
+      "ESC")
+     ;; Space
+     ((member key-str '("SPC" " ")) "SPC")
+     (t key-str))))
 
 (defun miao-leader-self-insert ()
   "Default command when leader state is enabled."
   (interactive)
   (setq this-command last-command)
   (when-let ((event (miao--event-key last-input-event))
-             (key (miao--parse-input-event event)))
+             (key (miao--parse-input-event (this-command-keys-vector))))
     (push (cons 'literal key) miao--leader-keys)
     ;; Try execute if the input is valid.
     (miao--leader-try-execute)))
 
 (defun miao--leader-lookup-key (keys)
-  (let* ((overriding-local-map miao-leader-state-keymap)
-         (keybind (key-binding keys))
-         (leader-major-keymap (gethash major-mode miao-leader-major-keymap-hash)))
-    (if keybind
-        keybind
-      (let* ((overriding-local-map leader-major-keymap)
-             (major-keybind (key-binding keys)))
-          (if (or (not major-keybind)
-                  (equal major-keybind 'undefined))
-              keybind
-            major-keybind)))))
+   (let* ((leader-major-keymap
+           (or (gethash major-mode miao-leader-major-keymap-hash)
+               miao-leader-state-keymap))
+          (keybind
+           (when leader-major-keymap
+             (lookup-key leader-major-keymap keys))))
+     keybind))
 
 (defun miao--leader-describe-keymap (keymap)
   (when (or

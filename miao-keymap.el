@@ -58,7 +58,10 @@
 
 (defvar miao-leader-base-keymap
   (let ((keymap (make-sparse-keymap)))
-    (suppress-keymap keymap t)
+    ;; (suppress-keymap keymap t)
+    (define-key keymap [remap self-insert-command] 'miao-leader-self-insert)
+    (define-key keymap [remap keyboard-quit] 'miao-leader-quit)
+    (define-key keymap [t] 'miao-leader-self-insert)
     (dolist (key miao-leader-mode-keys)
       (define-key keymap (kbd key) 'miao-leader-self-insert)
       (define-key keymap (kbd (concat "C-" key)) 'miao-leader-self-insert)
@@ -66,8 +69,6 @@
       (define-key keymap (kbd (concat "C-M-" key)) 'miao-leader-self-insert))
     (define-key keymap (kbd "<escape>") 'miao-leader-quit)
     (define-key keymap (kbd "C-g") 'miao-leader-quit)
-    (define-key keymap [remap keyboard-quit] 'miao-leader-quit)
-    (define-key keymap [remap self-insert-command] 'miao-leader-self-insert)
    keymap)
   "Keymap for Miao leader state.")
 
@@ -80,6 +81,7 @@
 (defvar miao-bypass-state-keymap
   (let ((keymap (make-sparse-keymap)))
     (suppress-keymap keymap t)
+    (define-key keymap (kbd "SPC") 'miao-leader-mode)
     (define-key keymap (kbd "C-z") 'miao--toggle-bypass-mode)
     (define-key keymap (kbd "M-<SPC>") 'miao-leader-mode)
     keymap)
