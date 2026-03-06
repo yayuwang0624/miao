@@ -37,6 +37,12 @@
                                    (leader . "L")
                                    (bypass . "B")))
 
+(defvar miao-state-colors
+  '((normal . "#51afef")
+    (insert . "#98be65")
+    (leader . "#da8548")
+    (bypass . "gray")))
+
 (defvar miao-leader-major-keymap-hash
   #s(hash-table))
 

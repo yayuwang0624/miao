@@ -320,4 +320,12 @@ and put it anywhere you want."
   (unless (cl-find '(:eval (miao-indicator)) mode-line-format :test 'equal)
     (setq-default mode-line-format (append '((:eval (miao-indicator))) mode-line-format))))
 
+(defun miao-update-modeline-box (&rest _)
+  (unless (or (minibufferp) (not miao--current-state))
+    (let* ((state (or (and (boundp 'miao--current-state)
+                           miao--current-state) 'normal))
+           (color (cdr (assoc state miao-state-colors))))
+      (set-face-attribute
+       'mode-line-active nil :box `(:line-width (-8 . -3) :color ,color)))))
+
 (provide 'miao-func)
