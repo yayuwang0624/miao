@@ -116,9 +116,29 @@
   (interactive)
   (delete-char 1))
 
-(defun miao-quit-window ()
+(defvar miao-cycle-buffer-index 0)
+
+(defun miao-cycle-buffer-p (buf)
+  (and (buffer-live-p buf)
+       (not (minibufferp buf))
+       (not (get-buffer-window buf 'visible))
+       (let ((name (buffer-name buf)))
+         (and name
+              (not (string-prefix-p " " name))
+              (not (string-prefix-p "*" name))))))
+
+(defun miao-cycle-buffer ()
   (interactive)
-  (quit-window))
+  (cl-incf miao-cycle-buffer-index)
+  (unless (eq last-command #'miao-cycle-buffer)
+    (setq miao-cycle-buffer-index 0))
+  ;; (message "last command %s\ncycle index %s" last-command miao-cycle-buffer-index)
+  (let* ((buffers (seq-filter #'miao-cycle-buffer-p
+                              (buffer-list)))
+         (len (length buffers)))
+    (when (> len 0)
+      (switch-to-buffer
+       (nth (mod miao-cycle-buffer-index len) buffers)))))
 
 (defun miao-delete-window ()
   (interactive)
