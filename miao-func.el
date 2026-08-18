@@ -117,6 +117,8 @@
   (delete-char 1))
 
 (defvar miao-cycle-buffer-index 0)
+(defvar miao-cycle-buffer-list nil
+  "Snapshot of buffers cycled in the current session.")
 
 (defun miao-cycle-buffer-p (buf)
   (and (buffer-live-p buf)
@@ -127,18 +129,29 @@
               (not (string-prefix-p " " name))
               (not (string-prefix-p "*" name))))))
 
+(defun miao-cycle-buffer--commit ()
+  "Promote the landed buffer to MRU front, then detach."
+  (unless (eq this-command #'miao-cycle-buffer)
+    (remove-hook 'pre-command-hook #'miao-cycle-buffer--commit)
+    (when (buffer-live-p (current-buffer))
+      ;; `record-buffer' is an internal C helper, not a callable Lisp function.
+      ;; Re-selecting the current buffer records it at the front of the MRU list.
+      (switch-to-buffer (current-buffer)))
+    (setq miao-cycle-buffer-list nil)))
+
 (defun miao-cycle-buffer ()
   (interactive)
-  (cl-incf miao-cycle-buffer-index)
   (unless (eq last-command #'miao-cycle-buffer)
-    (setq miao-cycle-buffer-index 0))
-  ;; (message "last command %s\ncycle index %s" last-command miao-cycle-buffer-index)
-  (let* ((buffers (seq-filter #'miao-cycle-buffer-p
-                              (buffer-list)))
-         (len (length buffers)))
+    (setq miao-cycle-buffer-index -1)
+    (setq miao-cycle-buffer-list
+          (seq-filter #'miao-cycle-buffer-p (buffer-list)))
+    (add-hook 'pre-command-hook #'miao-cycle-buffer--commit))
+  (cl-incf miao-cycle-buffer-index)
+  (let ((len (length miao-cycle-buffer-list)))
     (when (> len 0)
       (switch-to-buffer
-       (nth (mod miao-cycle-buffer-index len) buffers)))))
+       (nth (mod miao-cycle-buffer-index len) miao-cycle-buffer-list)
+       nil t))))
 
 (defun miao-delete-window ()
   (interactive)

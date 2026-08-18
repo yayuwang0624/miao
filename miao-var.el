@@ -86,7 +86,8 @@
     ediff-mode
     mu4e-main-mode
     mu4e-headers-mode
-    org-agenda-mode))
+    org-agenda-mode
+    debugger-mode))
 
 (defvar miao-bypass-keymap-hash
   #s(hash-table))
