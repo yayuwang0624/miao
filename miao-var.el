@@ -29,6 +29,8 @@
 (defvar-local miao--leader-previous-state nil
   "A symbol represent current state.")
 
+(defvar-local miao--bypass-previous-state nil)
+
 (defvar miao--leader-keys nil)
 (defvar miao--prefix-arg nil)
 

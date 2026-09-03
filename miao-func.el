@@ -42,11 +42,15 @@
 (defun miao-leader-quit ()
   "miao leader state quit and switch to previous state"
   (interactive)
-  (when miao-leader-mode
-    (miao-switch-to-previous-state)
+  (let ((previous miao--leader-previous-state)
+        (was-leader (or (bound-and-true-p miao-leader-mode)
+                        (eq miao--current-state 'leader))))
+    (miao--leader-cleanup)
     (setq miao--leader-previous-state nil)
-    (setq miao--leader-keys nil)
-    (setq overriding-local-map nil)))
+    (when (bound-and-true-p miao-leader-mode)
+      (miao-leader-mode -1))
+    (when was-leader
+      (miao--switch-state (if (memq previous '(nil leader)) 'normal previous)))))
 
 (defun miao-mark-word ()
   (interactive)

@@ -22,12 +22,35 @@
 
 ;;; Code:
 
+(require 'subr-x)
+(require 'cl-lib)
 
 (defun miao--switch-state (state)
   "Switch to STATE execute 'miao-switch-state-hook unless NO-HOOK is non-nil."
-  (unless (eq state (miao--current-state))
-    (let ((mode (alist-get state miao-state-mode-alist)))
+  (let* ((state (if (alist-get state miao-state-mode-alist) state 'normal))
+         (mode (alist-get state miao-state-mode-alist)))
+    (unless (eq state (miao--current-state))
       (funcall mode 1))))
+
+(defun miao--leader-cleanup ()
+  (setq miao--leader-keys nil
+        miao--prefix-arg nil
+        miao--leader-keymap-description-activated nil)
+  (when (eq overriding-local-map miao-leader-base-keymap)
+    (setq overriding-local-map nil))
+  (when (fboundp 'which-key--hide-popup)
+    (which-key--hide-popup)))
+
+(defun miao--leader-recover ()
+  (miao--leader-cleanup)
+  (when (bound-and-true-p miao-leader-mode)
+    (miao-leader-mode -1))
+  (let ((cmd (key-binding (this-command-keys-vector) t)))
+    (when (and (commandp cmd)
+               (not (eq cmd 'miao-leader-self-insert)))
+      (setq this-command cmd
+            real-this-command cmd)
+      (call-interactively cmd))))
 
 (defun miao--current-state ()
   miao--current-state)
@@ -73,11 +96,13 @@
   "Default command when leader state is enabled."
   (interactive)
   (setq this-command last-command)
-  (when-let ((event (miao--event-key last-input-event))
-             (key (miao--parse-input-event (this-command-keys-vector))))
-    (push (cons 'literal key) miao--leader-keys)
-    ;; Try execute if the input is valid.
-    (miao--leader-try-execute)))
+  (if (not (eq miao--current-state 'leader))
+      (miao--leader-recover)
+    (when-let ((event (miao--event-key last-input-event))
+               (key (miao--parse-input-event (this-command-keys-vector))))
+      (push (cons 'literal key) miao--leader-keys)
+      ;; Try execute if the input is valid.
+      (miao--leader-try-execute))))
 
 (defun miao--leader-lookup-key (keys)
    (let* ((leader-major-keymap

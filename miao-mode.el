@@ -98,16 +98,18 @@
   "Miao leader mode"
   :lighter " L"
   :keymap miao-leader-base-keymap
-  (setq miao--leader-previous-state miao--current-state)
   (if miao-leader-mode
       (when (not (equal miao--current-state 'leader))
           ;; switch to leader mode: disable current + set leader
+        (setq miao--leader-previous-state miao--current-state)
         (miao--disable-current-mode)
         (setq miao--current-state 'leader)
         (miao--leader-describe-keymap miao-leader-state-keymap)
         (setq overriding-local-map miao-leader-base-keymap
               overriding-terminal-local-map nil))
-   (setq miao--current-state nil)))
+    (miao--leader-cleanup)
+    (when (equal miao--current-state 'leader)
+      (setq miao--current-state nil))))
 
 (define-minor-mode miao-bypass-mode
   "Miao bypass mode"
